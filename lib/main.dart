@@ -1,7 +1,12 @@
+import 'dart:convert' show json;
+
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
+import 'package:http/http.dart' as http;
+import 'dart:developer';
 
 void main() => runApp(MyApp());
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -9,25 +14,125 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Welcome to Flutter',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Welcome to Flutter'),
-        ),
-        body: Center(
-          child: RandomWords(), 
-        ),
+      home: MyStatefulWidget(),
+    );
+  }
+}
+
+class MyStatefulWidget extends StatefulWidget {
+  MyStatefulWidget({Key key}) : super(key: key);
+
+  @override
+  _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
+}
+
+class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  int _selectedIndex = 0;
+  static const TextStyle optionStyle =
+      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text(
+      'Index 0: Home',
+      style: optionStyle,
+    ),
+    Text(
+      'Index 1: Business',
+      style: optionStyle,
+    ),
+    Text(
+      'Index 2: School',
+      style: optionStyle,
+    ),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('BottomNavigationBar Sample'),
+      ),
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            title: Text('Home'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business),
+            title: Text('Business'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            title: Text('School'),
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
       ),
     );
   }
 }
 
+class Photo {
+  final int albumId;
+  final int id;
+  final String title;
+  final String url;
+  final String thumbnailUrl;
+
+
+  const Photo({this.albumId, this.id, this.title, this.url, this.thumbnailUrl});
+
+  static Photo fromJson(dynamic json) {
+    return Photo(
+      albumId: json['albumId'],
+      id: json['id'],
+      title: json['title'],
+      url: json['url'],
+      thumbnailUrl: json['thumbnailUrl'],
+    );
+  }
+}
+
 class RandomWordsState extends State<RandomWords> {
+  List<Photo> list = List();
   final List<WordPair> _suggestions = <WordPair>[];
   final Set<WordPair> _saved = Set<WordPair>();
-  final TextStyle _biggerFont = const TextStyle(fontSize: 18); 
+  final TextStyle _biggerFont = const TextStyle(fontSize: 18);
+  bool isLoading = false;
 
   Widget _buildRow(WordPair pair) {
   final bool alreadySaved = _saved.contains(pair);
+
+ _fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
+    final response = await http.get("https://jsonplaceholder.typicode.com/photos");
+    if (response.statusCode == 200) {
+      log('response: $response');
+      list = (json.decode(response.body) as List)
+          .map((data) => Photo.fromJson(data))
+          .toList();
+      log('list: $list');
+
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      throw Exception('Failed to load photos');
+    }
+  }
 
     return ListTile(
       title: Text(
@@ -39,6 +144,8 @@ class RandomWordsState extends State<RandomWords> {
         color: alreadySaved ? Colors.red : null,
       ),
       onTap: () {
+        log('data: $isLoading');
+        _fetchData();
         setState(() {
           if (alreadySaved) {
             _saved.remove(pair);
