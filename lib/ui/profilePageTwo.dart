@@ -18,6 +18,12 @@ class ProfilePageTwo extends StatelessWidget {
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          tooltip: 'Increment',
+          child: Icon(Icons.add),
+          backgroundColor: Colors.red,
+        ),
     );
   }
 }

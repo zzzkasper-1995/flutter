@@ -19,12 +19,12 @@ class ProfilePage extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 16.0),
                 child: new FlatButton.icon(
                   onPressed: () {
-                    Navigator.of(context).pushNamed("/ProfilePageTwo");
+                    Navigator.of(context).pushNamed("/Counter");
                   },
                   color: Colors.red,
                   textColor: Colors.white,
                   icon: const Icon(Icons.navigate_next, size: 18.0),
-                  label: const Text('Go To ProfilePageTwo'),
+                  label: const Text('Go To Counter'),
                 ),
               ),
             ],
